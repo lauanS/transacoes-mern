@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  zeztra-mongo7:
+    image: mongo:7.0
+    restart: unless-stopped
+    volumes:
+      - zeztra-mongo7:/data/db
+    ports:
+      - "5001:27017"
+
+volumes:
+  zeztra-mongo7:
