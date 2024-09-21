@@ -1,0 +1,7 @@
+# Arquivos gerados
+/node_modules
+/dist
+
+# Envs
+.env*
+!.env.example
