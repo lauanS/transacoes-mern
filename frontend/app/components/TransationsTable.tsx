@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import TransationTableController from '@/app/components/TransationsTableController';
 
 type Transation = {
   id: string,
@@ -18,26 +19,31 @@ type PaginationResponse = {
   data: Transation[]
 }
 
-const TableComponent = () => {
+const TransationTable = () => {
   const [transations, setTransations] = useState<Transation[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
 
-  const fetchTransations = async () => {
+  const itensPerPage = 10;
+
+  const fetchTransations = useCallback(async () => {
     try {
       setError(false);
       setLoading(true);
       setMessage('');
 
       const response = await axios.get<PaginationResponse[]>(
-        "http://localhost:8000/transations/?page=1&pageSize=12"
+        `http://localhost:8000/transations/?page=${page}&pageSize=${itensPerPage}`
       );
 
       const responseData = response.data[0];
       const transations = responseData.data || [];
       
-      setTransations(transations)
+      setTransations(transations);
+      setTotal(responseData.metadata[0]?.totalCount || 0);
     } catch (error) {
       setMessage('Falha ao carregar os dados da tabela.');
       setError(true);
@@ -45,24 +51,24 @@ const TableComponent = () => {
     } finally {
       setLoading(false);
     }  
-  }
+  }, [page]);
 
   useEffect(() => {
     fetchTransations();
-  }, [])
+  }, [page, fetchTransations])
 
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-          <div className="overflow-hidden shadow-md sm:rounded-lg">
-            { 
-              error || loading
-              ? 
-                <p className={`text-sm mt-2 ${error ? 'text-red-300' : 'text-white'}`}>
-                  {error ? message : 'Carregando...'}
-                </p>
-              :
+          { 
+            error || loading
+            ? 
+              <p className={`text-sm mt-2 ${error ? 'text-red-300' : 'text-white'}`}>
+                {error ? message : 'Carregando...'}
+              </p>
+            :
+            <div className="overflow-hidden shadow-md sm:rounded-lg">
               <table className="min-w-full text-center">
                 <thead className="bg-gray-800 text-white">
                   <tr>
@@ -99,12 +105,18 @@ const TableComponent = () => {
                   ))}
                 </tbody>
               </table>
-            }
-          </div>
+              <TransationTableController 
+                total={total}
+                itensPerPage={itensPerPage}
+                currentPage={page}
+                setCurrentPage={setPage}
+              />
+            </div>
+          }
         </div>
       </div>
     </div>
   );
 };
 
-export default TableComponent;
+export default TransationTable;
