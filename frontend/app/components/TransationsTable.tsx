@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import TransationTableController from '@/app/components/TransationsTableController';
+import TransationTableFilters from '@/app/components/TransationsTableFilters';
 
 type Transation = {
   id: string,
@@ -29,14 +30,25 @@ const TransationTable = () => {
 
   const itensPerPage = 10;
 
-  const fetchTransations = useCallback(async () => {
+  const fetchTransations = useCallback(async (name: string | null, date: string | null) => {
     try {
       setError(false);
       setLoading(true);
       setMessage('');
 
+      const parsedName = name ? name.trim() : null;
+      const parsedDate =  date ? new Date(date).toISOString() : null;
+
       const response = await axios.get<PaginationResponse[]>(
-        `http://localhost:8000/transations/?page=${page}&pageSize=${itensPerPage}`
+        `http://localhost:8000/transations/`,
+        {
+          params: {
+            name: parsedName,
+            startDate: parsedDate,
+            page,
+            pageSize: itensPerPage
+          }
+        }
       );
 
       const responseData = response.data[0];
@@ -54,12 +66,14 @@ const TransationTable = () => {
   }, [page]);
 
   useEffect(() => {
-    fetchTransations();
+    fetchTransations(null, null);
   }, [page, fetchTransations])
 
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <TransationTableFilters fetchResources={fetchTransations} />
+
         <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
           { 
             error || loading
