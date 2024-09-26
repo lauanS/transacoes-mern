@@ -6,6 +6,12 @@ import listTransations from '@/services/transation/list';
 
 const router = express.Router();
 
+/**
+ * @route POST transation/upload
+ * @description Carrega um arquivo e inicia o processamento de transações.
+ *
+ * @returns {string} result.status - Status da operação.
+ */
 router.post('/upload', async (req: Request, res: Response): Promise<void> => {
   try {
     const filePath = await uploadFile(req);
@@ -18,6 +24,18 @@ router.post('/upload', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+/**
+ * @route GET /
+ * @description Lista transações paginadas com base nos filtros informados.
+ *
+ * @query {string} [name] - Nome do cliente.
+ * @query {string} [startDate] - Data de início.
+ * @query {number} [page=1] - Número da página de resultados.
+ * @query {number} [pageSize=25] - Quantidade de resultados por página.
+ *
+ * @returns {Object[]} result.metadata - Informações da paginação
+ * @returns {Transation[]} result.data - Dados das transações
+ */
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, startDate, page, pageSize } = req.query;
