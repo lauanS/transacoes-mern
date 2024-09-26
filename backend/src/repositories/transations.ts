@@ -13,16 +13,37 @@ export default class TransationRepository {
     return TransationModel.aggregate([
       {
         $match: {
-          ...(filters.name && {
-            name: {
-              $regex: filters.name, $options: 'i'
-            }
-          }),
           ...(filters.startDate && {
             date: {
               $gte: filters.startDate
             }
           })
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'doc',
+          foreignField: 'doc',
+          as: 'user'
+        }
+      },
+      {
+        $project: {
+          id: true,
+          date: true,
+          value: true,
+          doc: true,
+          name: '$user.name'
+        }
+      },
+      {
+        $match: {
+          ...(filters.name && {
+            name: {
+              $regex: filters.name, $options: 'i'
+            }
+          }),
         }
       },
       {
